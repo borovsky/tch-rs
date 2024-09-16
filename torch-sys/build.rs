@@ -177,18 +177,7 @@ impl SystemInfo {
             "macos" => Os::Macos,
             os => anyhow::bail!("unsupported TARGET_OS '{os}'"),
         };
-        // Locate the currently active Python binary, similar to:
-        // https://github.com/PyO3/maturin/blob/243b8ec91d07113f97a6fe74d9b2dcb88086e0eb/src/target.rs#L547
-        let python_interpreter = match os {
-            Os::Windows => PathBuf::from("python.exe"),
-            Os::Linux | Os::Macos => {
-                if env::var_os("VIRTUAL_ENV").is_some() {
-                    PathBuf::from("python")
-                } else {
-                    PathBuf::from("python3")
-                }
-            }
-        };
+        let python_interpreter = pyo3_build_config::get().executable.as_ref().unwrap().into();
         let mut libtorch_include_dirs = vec![];
         if cfg!(feature = "python-extension") {
             let output = std::process::Command::new(&python_interpreter)
